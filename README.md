@@ -4,13 +4,16 @@ Simple Image Crop directive for AngularJS. Enables to crop a circle or a square 
 
 ## Screenshots
 
-![Circle Crop](https://raw.github.com/alexk111/ngImgCrop/master/screenshots/circle_1.jpg "Circle Crop")
+![Circle Crop](https://raw.github.com/iceye/ngImgCrop/master/screenshots/circle_1.jpg "Circle Crop")
 
-![Square Crop](https://raw.github.com/alexk111/ngImgCrop/master/screenshots/square_1.jpg "Square Crop")
+![Square Crop](https://raw.github.com/iceye/ngImgCrop/master/screenshots/square_1.jpg "Square Crop")
+
+![Rectangle Crop](https://raw.github.com/iceye/ngImgCrop/master/screenshots/rectangle_1.png "Rectangle Crop")
+
 
 ## Live demo
 
-[Live demo on JSFiddle](http://jsfiddle.net/alexk111/rw6q9/)
+[Live demo on JSFiddle](http://jsfiddle.net/iceye/ryb31tj1/)
 
 ## Requirements
 
@@ -22,7 +25,7 @@ Simple Image Crop directive for AngularJS. Enables to crop a circle or a square 
 ### Download
 
 You have two options to get the files:
-- [Download ngImgCrop](https://github.com/alexk111/ngImgCrop/archive/master.zip) files from GitHub.
+- [Download ngImgCrop](https://github.com/iceye/ngImgCrop/archive/master.zip) files from GitHub.
 - Use Bower to download the files. Just run `bower install ngImgCrop`.
 
 ### Add files
@@ -53,7 +56,7 @@ var myAppModule = angular.module('MyApp', ['ngImgCrop']);
 
 ## Result image
 
-The result image will always be a square for the both circle and square area types. It's highly recommended to store the image as a square on your back-end, because this will enable you to easily update your pics later, if you decide to implement some design changes. Showing a square image as a circle on the front-end is not a problem - it is as easy as adding a *border-radius* style for that image in a css.
+The result image will always be a rectangle/square with the size of cropped image for the both circle and square area types (see Usage.1 and *new* JSFiddle Demo for autoresize feature in action). It's highly recommended to store the image as a square on your back-end, because this will enable you to easily update your pics later, if you decide to implement some design changes. Showing a square image as a circle on the front-end is not a problem - it is as easy as adding a *border-radius* style for that image in a css.
 
 ## Example code
 
@@ -110,14 +113,25 @@ The following code enables to select an image using a file input and crop it. Th
 <img-crop
     image="{string}"
     result-image="{string}"
+    result-width="{string}"
+    result-height="{string}"
+    result-x="{string}"
+    result-y="{string}"
+    original-width="{string}"
+    original-height="{string}"
+    original-crop-x="{string}"
+    original-crop-y="{string}"
+    original-crop-width="{string}"
+    original-crop-height="{string}"
    [change-on-fly="{boolean}"]
-   [area-type="{circle|square}"]
+   [area-type="{circle|square|rectangle}"]
    [area-min-size="{number}"]
    [result-image-size="{number}"]
    [on-change="{expression}"]
    [on-load-begin="{expression"]
    [on-load-done="{expression"]
    [on-load-error="{expression"]
+    
 ></img-crop>
 ```
 
@@ -166,7 +180,26 @@ Assignable angular expression to data-bind to. NgImgCrop puts a data uri of a cr
 *Optional*. Expression to evaluate when the source image didn't load.
 
 
+### result-width, result-height, result-x, result-y
+
+*Optional*. Assignable angular expression to data-bind to. NgImgCrop puts the dimensions (width, height) and coordinates (x,y) data of the cropped resized image into it.
+
+
+### original-width, original-height
+
+*Optional*. Assignable angular expression to data-bind to. NgImgCrop puts the dimensions (width, height) of the uploaded image into it.
+
+
+### original-crop-width, original-crop-height, original-crop-x, original-crop-y
+
+*Optional*. Assignable angular expression to data-bind to. NgImgCrop puts the dimensions (width, height) and coordinates (x,y) of the cropped original image into it.
+
+
+
+
+
+
 ## License
 
-See the [LICENSE](https://github.com/alexk111/ngImgCrop/blob/master/LICENSE) file.
+See the [LICENSE](https://github.com/iceye/ngImgCrop/blob/master/LICENSE) file.
 
