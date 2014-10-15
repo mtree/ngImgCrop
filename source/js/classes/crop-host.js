@@ -177,6 +177,18 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
         temp_ctx.drawImage(image, (center.x-theArea.getSize().w/2)*(image.width/ctx.canvas.width), (center.y-theArea.getSize().h/2)*(image.height/ctx.canvas.height), theArea.getSize().w*(image.width/ctx.canvas.width), theArea.getSize().h*(image.height/ctx.canvas.height), 0, 0, ris.w, ris.h);
         retObj.dataURI = temp_canvas.toDataURL();
         retObj.imageData = temp_canvas.getContext("2d").getImageData(0, 0, temp_canvas.width, temp_canvas.height);
+        retObj.imageSize= {
+        	w: image.width,
+        	h: image.height,
+        	x: Math.round( ( theArea.getSize().x * image.width)/ctx.canvas.width ),
+        	y: Math.round( ( theArea.getSize().y * image.height)/ctx.canvas.height )
+        };
+        retObj.cropImageSize= {
+        	w: ctx.canvas.width,
+        	h: ctx.canvas.height,
+        	x: Math.round( theArea.getSize().x ),
+        	y: Math.round( theArea.getSize().y )
+        }
       }
       return retObj;
     };
