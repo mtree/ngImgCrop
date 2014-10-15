@@ -6,13 +6,27 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
     scope: {
       image: '=',
       resultImage: '=',
+      resultWidth: '=',
+      resultHeight: '=',
+      resultX: '=',
+      resultY: '=',
+      
+      originalWidth: '=',
+      originalHeight: '=',
+      originalCropX: '=',
+      originalCropY: '=',
+      originalCropWidth: '=',
+      originalCropHeight: '=',
+      
+      
+      
       resultImageData: '=',
 
       changeOnFly: '=',
+      areaCoords: '=',
       areaType: '@',
-      aspectRatio: '=',
       areaMinSize: '=',
-      resultImageSize: '@',
+      resultImageSize: '=',
 
       onChange: '&',
       onLoadBegin: '&',
@@ -44,8 +58,34 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
           if(angular.isDefined(scope.resultImageData)) {
             scope.resultImageData=resultImageObj.imageData;
           }
-          scope.onChange({$dataURI: scope.resultImage});
-          scope.onChange({$imageData: scope.resultImageData});
+
+          updateAreaCoords(scope);
+          //Dimension of resized cropped image 
+          scope.resultWidth = Math.round(scope.areaCoords.w);
+          scope.resultHeight =Math.round(scope.areaCoords.h);
+          scope.resultX = Math.round(scope.areaCoords.x);
+          scope.resultY =Math.round(scope.areaCoords.y);
+          
+          
+          
+          //Dimension of original image
+          scope.originalWidth = resultImageObj.imageSize.w;
+          scope.originalHeight = resultImageObj.imageSize.h;
+          
+          //Position of crop  on original image
+          scope.originalCropX = resultImageObj.imageSize.x;
+          scope.originalCropY = resultImageObj.imageSize.y;
+         
+         
+     	 //Dimension of original cropped image
+          scope.originalCropWidth = Math.round( (scope.resultWidth*scope.originalWidth) / resultImageObj.cropImageSize.w ); 
+          scope.originalCropHeight = Math.round( (scope.resultHeight*scope.originalHeight) / resultImageObj.cropImageSize.h ); 
+          
+          scope.onChange({
+            $dataURI: scope.resultImage,
+            $imageData: scope.resultImageData
+          });
+
         }
       };
 
