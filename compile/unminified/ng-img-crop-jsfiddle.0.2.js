@@ -1208,7 +1208,6 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
       resultImageData: '=',
 
       changeOnFly: '=',
-      areaCoords: '=',
       areaType: '@',
       areaMinSize: '=',
       resultImageSize: '=',
