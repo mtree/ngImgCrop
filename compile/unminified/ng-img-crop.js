@@ -1,11 +1,11 @@
 /*!
- * ngImgCrop v0.2.1
+ * ngImgCrop v0.2.0
  * https://github.com/alexk111/ngImgCrop
  *
  * Copyright (c) 2014 Alex Kaul
  * License: MIT
  *
- * Generated at Monday, August 18th, 2014, 11:08:25 AM
+ * Generated at Sunday, November 23rd, 2014, 5:36:17 PM
  */
 (function() {
 'use strict';
@@ -205,7 +205,7 @@ crop.factory('cropAreaRectangle', ['cropArea', function(CropArea) {
   // return a type string
   CropAreaRectangle.prototype.getType = function() {
     return 'rectangle';
-  }
+  };
 
   CropAreaRectangle.prototype._calcRectangleCorners=function() {
     var size = this.getSize();
@@ -491,6 +491,7 @@ crop.factory('cropArea', ['cropCanvas', function(CropCanvas) {
     this._ctx=ctx;
     this._events=events;
 
+    this._aspectRatio=null;
     this._minSize={x:0, y: 0, w:80, h:80};
 
     this._cropCanvas=new CropCanvas(ctx);
@@ -546,6 +547,12 @@ crop.factory('cropArea', ['cropCanvas', function(CropCanvas) {
     this.setSize({x: point.x - s.w / 2, y: point.y - s.h / 2, w: s.w, h: s.h});
   };
 
+  CropArea.prototype.setAspectRatio = function (ratio) {
+    this._aspectRatio = ratio;
+    this._minSize = this._processSize(this._minSize);
+    this.setSize(this._minSize);
+  };
+
   CropArea.prototype.setMinSize = function (size) {
     this._minSize = this._processSize(size);
     this.setSize(this._minSize);
@@ -555,7 +562,7 @@ crop.factory('cropArea', ['cropCanvas', function(CropCanvas) {
   CropArea.prototype.getType = function() {
     //default to circle
     return 'circle';
-  }
+  };
 
   /* FUNCTIONS */
   CropArea.prototype._preventBoundaryCollision=function(size) {
@@ -611,14 +618,27 @@ crop.factory('cropArea', ['cropCanvas', function(CropCanvas) {
       }
     }
 
-    //finally, enforce 1:1 aspect ratio for sqaure-like selections
-    if (this.getType() === "circle" || this.getType() === "square")
+    //finally, enforce 1:1 aspect ratio for square-like selections
+    var areaType = this.getType();
+    if (areaType === "circle" || areaType === "square")
     {
       newSize = {x: newSize.x,
                  y: newSize.y,
                  w: Math.min(newSize.w, newSize.h),
                  h: Math.min(newSize.w, newSize.h)};
     }
+    //allow to set a user-defined aspect ratio for rectangles
+    else if (areaType === "rectangle" && this._aspectRatio !== null) {
+      var canvasH = this._ctx.canvas.height;
+      var heightWithRatio = newSize.w / this._aspectRatio;
+
+      if (heightWithRatio < canvasH && se.y < canvasH) {
+        newSize.h = newSize.w / this._aspectRatio;
+      } else {
+        newSize.w = newSize.h * this._aspectRatio;
+      }
+    }
+
     return newSize;
   };
 
@@ -630,19 +650,24 @@ crop.factory('cropArea', ['cropCanvas', function(CropCanvas) {
     // for square-like sizes (including circle)
     if (typeof size == "number")
     {
-      size = {w: size, h: size};
+      size = {
+        w: size,
+        h: size
+      };
     }
 
-    return {x: size.x || this._minSize.x,
-            y: size.y || this._minSize.y,
-            w: size.w || this._minSize.w,
-            h: size.h || this._minSize.h};
-  }
+    return {
+      x: size.x || this._minSize.x,
+      y: size.y || this._minSize.y,
+      w: size.w || this._minSize.w,
+      h: size.h || this._minSize.h
+    };
+  };
 
   CropArea.prototype._southEastBound=function(size)
   {
     return {x: size.x + size.w, y: size.y + size.h};
-  }
+  };
   CropArea.prototype.draw=function() {
     // draw crop area
     this._cropCanvas.drawCropArea(this._image,this.getCenterPoint(),this._size,this._drawArea);
@@ -881,6 +906,10 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
         if ((areaType === 'circle') || (areaType === 'square')) {
           cw = ch = Math.min(cw, ch);
         }
+        //allow to set a user-defined aspect ratio for rectangles
+        else if (areaType === "rectangle" && theArea._aspectRatio !== null) {
+          ch = cw / theArea._aspectRatio;
+        }
 
         theArea.setSize({ w: Math.min(200, cw / 2),
                           h: Math.min(200, ch / 2)});
@@ -974,10 +1003,6 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
       return retObj;
     };
 
-    this.getAreaCoords=function() {
-      return theArea.getSize()
-    }
-
     this.setNewImageSource=function(imageSource) {
       image=null;
       resetCropHost();
@@ -1043,6 +1068,18 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
 
     };
 
+    this.setAspectRatio=function(ratio) {
+      if (angular.isUndefined(ratio))
+      {
+        return;
+      }
+     ratio=parseFloat(ratio);
+      if(!isNaN(ratio)) {
+        theArea.setAspectRatio(ratio);
+        drawScene();
+      }
+    };
+
     this.setAreaMinSize=function(size) {
       if (angular.isUndefined(size))
       {
@@ -1071,22 +1108,23 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
       }
 
       //allow setting of size to "selection" for mirroring selection's dimensions
-      if (angular.isString(size))
+      if (angular.isString(size) && isNaN(parseFloat(size)))
       {
         resImgSize = size;
         return;
       }
 
       //allow scalar values for square-like selection shapes
-      if (angular.isNumber(size))
+      var parsedSize = parseInt(size, 10);
+      if (!isNaN(parsedSize))
       {
-        size = parseInt(size, 10);
-        size = {w: size,
-                h: size};
+        size = {w: parsedSize,
+                h: parsedSize};
+      } else {
+        size = {w: parseInt(size.w, 10),
+                h: parseInt(size.h, 10)};
       }
 
-      size={w: parseInt(size.w, 10),
-            h: parseInt(size.h, 10)};
       if(!isNaN(size.w) && !isNaN(size.h)) {
         resImgSize=size;
         drawScene();
@@ -1096,7 +1134,7 @@ crop.factory('cropHost', ['$document', 'cropAreaCircle', 'cropAreaSquare', 'crop
     // returns a string of the selection area's type
     this.getAreaType=function() {
       return theArea.getType();
-    }
+    };
 
     this.setAreaType=function(type) {
       var center = theArea.getCenterPoint();
@@ -1269,6 +1307,8 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
 				  }  
 			  }         
 		  }
+		           
+			  
           
           scope.onChange({
             $dataURI: scope.resultImage,
@@ -1277,11 +1317,6 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
 
         }
       };
-
-      var updateAreaCoords=function(scope) {
-        var areaCoords=cropHost.getAreaCoords();
-        scope.areaCoords=areaCoords;
-      }
 
       // Wrapper to safely exec functions within $apply on a running $digest cycle
       var fnSafeApply=function(fn) {
@@ -1320,6 +1355,10 @@ crop.directive('imgCrop', ['$timeout', 'cropHost', 'cropPubSub', function($timeo
       });
       scope.$watch('areaType',function(){
         cropHost.setAreaType(scope.areaType);
+        updateResultImage(scope);
+      });
+      scope.$watch('aspectRatio',function(){
+        cropHost.setAspectRatio(scope.aspectRatio);
         updateResultImage(scope);
       });
       scope.$watch('areaMinSize',function(){
